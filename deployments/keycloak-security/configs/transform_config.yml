@@ -1,0 +1,2 @@
+endpointUrl:
+  transform: http://transform:8080/transform/
