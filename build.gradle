@@ -50,6 +50,7 @@ dependencies {
             "org.springframework.boot:spring-boot-starter-oauth2-client",
             "org.springframework.boot:spring-boot-starter-actuator",
             "org.springframework.cloud:spring-cloud-starter-gateway",
+            "org.springframework.cloud:spring-cloud-starter-security",
             "org.thymeleaf.extras:thymeleaf-extras-springsecurity5",
             "org.springframework.security:spring-security-oauth2-resource-server",
             "org.springframework.security:spring-security-oauth2-jose"

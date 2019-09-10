@@ -27,6 +27,7 @@ public class TokenRelayGatewayFilter implements GatewayFilter {
 
   @Override
   public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+    System.out.println("##### GARRETT ####### #1");
     return exchange
         .getPrincipal()
         .cast(OAuth2AuthenticationToken.class)
@@ -39,12 +40,14 @@ public class TokenRelayGatewayFilter implements GatewayFilter {
 
   private Mono<OAuth2AuthorizedClient> authorizedClient(
       ServerWebExchange exchange, OAuth2AuthenticationToken oauth2Authentication) {
+    System.out.println("##### GARRETT ####### #2");
     return this.authorizedClientRepository.loadAuthorizedClient(
         oauth2Authentication.getAuthorizedClientRegistrationId(), oauth2Authentication, exchange);
   }
 
   private ServerWebExchange withBearerAuth(
       ServerWebExchange exchange, OAuth2AccessToken accessToken) {
+    System.out.println("##### GARRETT ####### #3");
     return exchange
         .mutate()
         .request(r -> r.headers(headers -> headers.setBearerAuth(accessToken.getTokenValue())))

@@ -58,6 +58,8 @@ configs:
     file: ./configs/transform_config.yml
   keycloak_config:
     file: ./configs/keycloakJsonConfig.json
+  gateway_config:
+    file: ./configs/gateway_config.yml
 
 services:
   minio:
@@ -162,6 +164,12 @@ services:
     networks:
       - default
 
+  ### FOR DEBUGGING
+  resource:
+    image: resource-server
+    networks:
+      - default
+
   # Security Setup
   gateway:
     depends_on:
@@ -174,6 +182,11 @@ services:
       traefik.port: '8080'
     networks:
       - default
+    configs:
+      - source: gateway_config
+        target: /configs/gateway_config.yml
+    command:
+      - "--spring.config.additional-location=file:/configs/gateway_config.yml"
 
   keycloak:
     depends_on:
