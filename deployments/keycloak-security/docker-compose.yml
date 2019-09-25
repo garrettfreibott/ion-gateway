@@ -164,12 +164,6 @@ services:
     networks:
       - default
 
-  ### FOR DEBUGGING
-  resource:
-    image: resource-server
-    networks:
-      - default
-
   # Security Setup
   gateway:
     depends_on:
@@ -231,8 +225,8 @@ services:
     # no network property
 
   reverse-proxy:
-    command: --docker
-    image: traefik
+    command: --api --docker
+    image: traefik:v1.7
     networks:
       - default
     ports:

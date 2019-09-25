@@ -5,7 +5,7 @@
 * Docker daemon
 
 ## Building
-To just compile and build the projects:
+To compile and build the projects:
 ```bash
 ./gradlew assemble
 ```
@@ -30,4 +30,6 @@ The build can fail because the static analysis tool, Spotless, detects an issue.
 For more information about spotless checks see
 [here](https://github.com/diffplug/spotless/tree/master/plugin-gradle#custom-rules).
 
-// TODO: Running the container and connecting to internal docker services
+### Local Deployment
+See the README.md under `deployments/keycloak-security` for guidance on starting a local sample deployment for
+protecting ion-ingest, ion-search, and ion-store microservices.

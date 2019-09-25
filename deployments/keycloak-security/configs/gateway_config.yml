@@ -37,8 +37,7 @@ spring:
           uri: http://minio:9000
           predicates:
             - Path=/minio/**
-          filters:
-            - TokenRelay=
+          # do not relay token to minio, it doesnt use keycloak
         - id: keycloak
           uri: http://keycloak:8080
           predicates:
@@ -55,17 +54,5 @@ spring:
           uri: http://ingest:8080
           predicates:
             - Path=/ingest/**
-          filters:
-            - TokenRelay=
-        - id: nc # netcat route for debugging
-          uri: http://10.101.6.111:9999
-          predicates:
-            - Path=/nc/**
-          filters:
-            - TokenRelay=
-        - id: resource # resource server for debugging
-          uri: http://resource:9000
-          predicates:
-            - Path=/resource/**
           filters:
             - TokenRelay=

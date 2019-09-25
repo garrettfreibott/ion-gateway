@@ -9,9 +9,6 @@ package com.connexta.gateway;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.health.HealthEndpointAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.info.InfoEndpointAutoConfiguration;
-import org.springframework.boot.actuate.autoconfigure.security.reactive.EndpointRequest;
-import org.springframework.boot.actuate.health.HealthEndpoint;
-import org.springframework.boot.actuate.info.InfoEndpoint;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -25,6 +22,7 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.WebFilterChainProxy;
+import org.springframework.security.web.server.authentication.RedirectServerAuthenticationEntryPoint;
 
 @Configuration
 @ConditionalOnClass({EnableWebFluxSecurity.class, WebFilterChainProxy.class})
@@ -37,46 +35,31 @@ import org.springframework.security.web.server.WebFilterChainProxy;
   WebEndpointAutoConfiguration.class,
   ReactiveOAuth2ClientAutoConfiguration.class
 })
-@EnableWebFluxSecurity // BREAKING LINE
+@EnableWebFluxSecurity
 class WebSecurityConfig {
 
-  // NOTE: This code duplicates ReactiveManagementWebSecurityAutoConfiguration and enhances with
-  // oauth2Login() specific configuration
+  // NOTE: This code is modeled after ReactiveManagementWebSecurityAutoConfiguration but tailored
+  // for OAuth2 browser
+  // and bearer token logins
 
   @Bean
   SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
-    // @formatter:off
     return http.csrf()
         .disable()
         .authorizeExchange()
-        .matchers(EndpointRequest.to(HealthEndpoint.class, InfoEndpoint.class))
-        .permitAll()
         .anyExchange()
         .authenticated()
         .and()
-        .httpBasic()
-        .and()
-        .formLogin()
-        .and()
-        // START BREAKING SECTION
-        .oauth2ResourceServer()
+        .oauth2ResourceServer() // handles system-to-system bearer tokens
         .jwt()
         .and()
         .and()
-        // END BREAKING SECTION
-        .oauth2Login()
+        .oauth2Login() // handles browser redirect logins
         .and()
-        //        .exceptionHandling()
-        //        // NOTE:
-        //        // This configuration is needed to perform the auto-redirect to UAA for
-        // authentication.
-        //        // Leaving this out will result in a default login page with option for
-        // formLogin() and link
-        //        // for UAA for oauth2Login()
-        //        .authenticationEntryPoint(
-        //            new RedirectServerAuthenticationEntryPoint("/oauth2/authorization/master"))
-        //        .and()
+        .exceptionHandling() // Auto redirects to keycloak login if no auth header is present
+        .authenticationEntryPoint(
+            new RedirectServerAuthenticationEntryPoint("/oauth2/authorization/master"))
+        .and()
         .build();
-    // @formatter:on
   }
 }

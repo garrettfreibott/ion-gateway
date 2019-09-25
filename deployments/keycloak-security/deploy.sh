@@ -5,8 +5,7 @@ name="cdr-local"
 
 helptext="\
 Usage: deploy.sh [command]
-Utility script for setting up a docker network and deploying a local instance of CDR into a docker swarm.
-'deploy' is the default option if no command is given.
+Utility script for deploying and managing a local istance of CDR, Keycloak, and a Cloud Gateway.
 
 Commands:
   d, deploy\t\tcreate the docker network and stack, stopping if either already exists
@@ -31,9 +30,6 @@ function wait_for_empty_results() {
 function cleanup () {
     printf "Removing $name docker stack and network...\n"
     docker stack rm $name
-#    docker network rm $name
-#    printf "\nWaiting for docker network '$name' to go down."
-#    wait_for_empty_results "docker network ls | grep -w $name"
     printf "\nDone!\n"
 }
 
@@ -58,27 +54,15 @@ function deploy_images () {
     docker stack deploy -c docker-compose.yml $name
 }
 
-# Check is network already does not exist or is not attachable.
-function configure_network () {
-    printf "Checking Docker Network...\n"
-    network=`docker network ls | grep "$name"`
-    networktype=$(docker network inspect $name 2>/dev/null | grep -i "\"driver\": \"overlay\"")
-    attachable=$(docker network inspect $name 2>/dev/null | grep -i "\"attachable\": true")
-    if [ -z "$network" ]; then
-        printf "Network '$name' does not exist, creating new network... \n"
-        create_new_network
-    elif [ -z "$networktype" ] || [ -z "$attachable" ]; then
-        printf  "ERROR: The docker network '$name' exists, but is not an attachable overlay network. Please run 'clean' or 'redeploy' to remove or update this network.\n"
-        exit 1
-    else
-        printf "Network '$name' already exists and is attachable. \n"
-    fi
-}
-
 function print_warning () {
     printf "\
 ====== WARNING: TEST DEPLOYMENT ======\n\
-This docker deployment will create a local minio server with default secret and key. Make sure this isn't being deployed into production.\n\n"
+This docker deployment will create a local minio server with default secret and key, and a local Keycloak with\
+default users. Make sure this isn't being deployed into production.\n\n"
+}
+
+function print_finish () {
+  printf "Run './access-token.sh' to retrieve the a default admin access token for use in postman, curl, etc.\n"
 }
 
 # start of script
@@ -86,7 +70,7 @@ if [ -z $1 ]; then
     print_warning
     deploy_images
     wait_for_containers
-    ./access-token.sh
+    print_finish
 else
    case $1 in
     deploy | d)
@@ -94,7 +78,7 @@ else
         assert_stack_is_not_deployed
         deploy_images
         wait_for_containers
-        ./access-token.sh
+        print_finish
         ;;
     clean | c)
         cleanup
@@ -102,14 +86,14 @@ else
     update | u)
         deploy_images
         wait_for_containers
-        ./access-token.sh
+        print_finish
         ;;
     redeploy | r)
         print_warning
         cleanup
         deploy_images
         wait_for_containers
-        ./access-token.sh
+        print_finish
         ;;
     *)
         printf "$helptext"
