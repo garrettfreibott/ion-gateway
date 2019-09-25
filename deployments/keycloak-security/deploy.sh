@@ -28,8 +28,10 @@ function wait_for_empty_results() {
 # Removes the docker stack and network.
 # Docker networks usually take a few seconds to go down, so it waits to prevent redeployment issues
 function cleanup () {
-    printf "Removing $name docker stack and network...\n"
+    printf "Removing $name docker stack...\n"
     docker stack rm $name
+    printf "Waiting for docker network to go down..."
+    wait_for_empty_results "docker network ls | grep $name"
     printf "\nDone!\n"
 }
 

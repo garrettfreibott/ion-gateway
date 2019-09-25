@@ -44,22 +44,24 @@ class WebSecurityConfig {
 
   @Bean
   SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
-    return http.csrf()
-        .disable()
-        .authorizeExchange()
-        .anyExchange()
-        .authenticated()
-        .and()
-        .oauth2ResourceServer() // handles system-to-system bearer tokens
-        .jwt()
-        .and()
-        .and()
-        .oauth2Login() // handles browser redirect logins
-        .and()
-        .exceptionHandling() // Auto redirects to keycloak login if no auth header is present
+
+    // Disable CSRF
+    http.csrf().disable();
+
+    // Allow authenticated requests to any context
+    http.authorizeExchange().anyExchange().authenticated();
+
+    // Handle system-to-system Bearer tokens
+    http.oauth2ResourceServer().jwt();
+
+    // Handle browser redirects to Oauth IDP
+    http.oauth2Login();
+
+    // Auto redirect to keycloak if no auth header is present
+    http.exceptionHandling()
         .authenticationEntryPoint(
-            new RedirectServerAuthenticationEntryPoint("/oauth2/authorization/master"))
-        .and()
-        .build();
+            new RedirectServerAuthenticationEntryPoint("/oauth2/authorization/master"));
+
+    return http.build();
   }
 }
