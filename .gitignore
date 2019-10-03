@@ -1,12 +1,6 @@
-## Java ##
-
-# Compiled class file
+# Java
 *.class
-
-# Log file
 *.log
-
-# Package Files #
 *.jar
 *.war
 *.nar
@@ -14,25 +8,28 @@
 *.zip
 *.tar.gz
 *.rar
-
-# virtual machine crash logs
 hs_err_pid*
 
-
-## Gradle ##
-
+# Gradle
 .gradle
-/build/
+build
 gradle-app.setting
 .gradletasknamecache
-
-
-## Editors ##
+!gradle-wrapper.jar
 
 # Intellij
 *.iml
 *.idea
 
 # VSCode
-.vscode/*
+.vscode
 
+# Editors
+*~
+
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+.TemporaryItems
+.Trashes

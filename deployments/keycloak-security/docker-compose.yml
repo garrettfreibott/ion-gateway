@@ -1,0 +1,221 @@
+# Configurable Registries
+#    This compose file allows the composition to be used in multiple environments. Instead of
+#    using hard-coded strings to identify the names of images, variable interpolation is used
+#    to make the registry part of the name configurable at runtime.
+#
+#    If the REGISTRY environment variable is not set, the registry defaults to
+#    Docker Hub (docker.io).
+#
+#    If the REGISTRY variable is set, interpolation on the command line can be used to inject
+#    a registry's address when the Docker service is deployed. the format of the command is:
+#
+#        docker stack deploy -c <(REGISTRY=<registry-url> docker-compose config) cdr
+#
+#    where <registry-url> is changed to be the address of the target registry.
+# --------------------------------------------------------------------------------------------------
+# To deploy to a cloud:
+#    1. Build the images locally.
+#    2. Tag those images to include the target registry address.
+#    3. Push those images.
+#    4. From the cloud environment, execute:
+#
+#        docker stack deploy -c <(REGISTRY=<registry-url> docker-compose config) cdr
+#
+#
+version: '3.7'
+
+networks:
+  default:
+    driver: overlay
+  proxy:
+    driver: overlay
+  security:
+    driver: overlay
+
+volumes:
+  mysql_data:
+    driver: local
+  solr_data:
+    driver: local
+  data:
+
+secrets:
+  aws_s3_secret:
+    file: ./secrets/minio_secret.notsec
+  aws_s3_access:
+    file: ./secrets/minio_access.notsec
+
+configs:
+  ingest_config:
+    file: ./configs/ingest_config.yml
+  s3_config:
+    file: ./configs/s3_config.yml
+  search_config:
+    file: ./configs/search_config.yml
+  store_config:
+    file: ./configs/store_config.yml
+  transform_config:
+    file: ./configs/transform_config.yml
+  keycloak_config:
+    file: ./configs/keycloakJsonConfig.json
+  gateway_config:
+    file: ./configs/gateway_config.yml
+
+# Internal Ports: 9000, 8080
+services:
+  minio:
+    image: minio/minio
+    hostname: minio
+    entrypoint: sh
+    environment:
+      MINIO_ACCESS_KEY: MINIOEXAMPLEACCESSKEY1
+      MINIO_SECRET_KEY: MINIOEXAMPLESECRETKEY1
+    networks:
+      - default
+    command: -c "mkdir /data/ingest-quarantine && /usr/bin/minio server /data"
+
+# Internal Ports: 8080, 10053
+  ingest:
+    image: ${REGISTRY:-docker.io}/cnxta/ion-ingest
+    hostname: ingest
+    networks:
+      - default
+    deploy:
+      restart_policy:
+        condition: any
+    configs:
+      - source: transform_config
+        target: /configs/transform_config.yml
+    command:
+      - "--spring.config.additional-location=file:/configs/transform_config.yml"
+
+# Internal Ports: 8080, 10052
+  store:
+    image: ${REGISTRY:-docker.io}/cnxta/ion-store
+    hostname: store
+    networks:
+      - default
+    depends_on:
+      - minio
+    deploy:
+      restart_policy:
+        condition: any
+    secrets:
+      - source: aws_s3_secret
+        target: /secrets/aws_s3_secret.sec
+      - source: aws_s3_access
+        target: /secrets/aws_s3_access.sec
+    configs:
+      - source: s3_config
+        target: /configs/s3_config.yml
+      - source: store_config
+        target: /configs/store_config.yml
+    command:
+      - "--aws.s3.secret.file=/secrets/aws_s3_secret.sec"
+      - "--aws.s3.access.file=/secrets/aws_s3_access.sec"
+      - "--spring.config.additional-location=file:/configs/s3_config.yml"
+      - "--spring.config.additional-location=file:/configs/store_config.yml"
+
+# Internal Ports: 8080, 10051
+  search:
+    image: ${REGISTRY:-docker.io}/cnxta/ion-search
+    networks:
+      - default
+    depends_on:
+      - solr
+    deploy:
+      restart_policy:
+        condition: any
+    configs:
+      - source: search_config
+        target: /configs/search_config.yml
+    command:
+      - "--spring.config.additional-location=file:/configs/search_config.yml"
+  solr:
+    image: solr:8.1.1
+    ports:
+      - "9983:8983"
+    volumes:
+      - data:/opt/solr/server/solr/mycores
+    entrypoint:
+      - docker-entrypoint.sh
+      - solr-precreate
+      - searchTerms
+    networks:
+      - default
+
+  # Security Setup
+  gateway:
+    depends_on:
+      - keycloak
+    image: ${REGISTRY:-docker.io}/cnxta/ion-gateway:0.1.0-SNAPSHOT
+    labels:
+      traefik.enabled: "true"
+      traefik.frontend.passHostHeader: "true"
+      traefik.frontend.rule: Host:ion
+      traefik.port: '8080'
+    networks:
+      - default
+    configs:
+      - source: gateway_config
+        target: /configs/gateway_config.yml
+    command:
+      - "--spring.config.additional-location=file:/configs/gateway_config.yml"
+
+  keycloak:
+    depends_on:
+      - mysql
+    environment:
+      DB_ADDR: mysql
+      DB_DATABASE: keycloak
+      DB_PASSWORD: password
+      DB_USER: keycloak
+      DB_VENDOR: MYSQL
+      KEYCLOAK_PASSWORD: admin
+      KEYCLOAK_USER: admin
+      keycloak.migration.action: import
+      keycloak.migration.provider: singleFile
+      keycloak.migration.file: /keycloakJsonConfig.json
+      keycloak.migration.strategy: OVERWRITE_EXISTING
+    image: jboss/keycloak
+    labels:
+      traefik.frontend.passHostHeader: "true"
+      traefik.frontend.rule: Host:keycloak
+      traefik.port: '9000'
+    networks:
+      - default
+    ports:
+      - published: 8080
+        target: 8080
+    configs:
+      - source: keycloak_config
+        target: /keycloakJsonConfig.json
+
+  mysql:
+    environment:
+      MYSQL_DATABASE: keycloak
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: keycloak
+    image: mysql:5
+    volumes:
+      - mysql_data:/var/lib/mysql:rw
+    networks:
+      - default
+
+  reverse-proxy:
+    command: --api --docker
+    image: traefik:v1.7
+    networks:
+      - default
+    ports:
+      - published: 80
+        target: 80
+      - published: 8081
+        target: 8081
+#      - published: 443
+#        target: 443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - ./configs/proxy:/etc/traefik:rw
+
