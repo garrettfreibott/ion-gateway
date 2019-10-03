@@ -118,15 +118,5 @@ springBoot {
     mainClassName = "com.connexta.gateway.GatewayApplication"
 }
 
-bootJar {
-    launchScript()
-}
-
-docker {
-    files tasks.bootJar.outputs
-    name "cnxta/ion-gateway:${project.version}"
-    buildArgs([JAR_FILE: "${tasks.bootJar.outputs.files.singleFile.name}"])
-}
-
 build.finalizedBy("docker")
 bootRun.dependsOn(build)

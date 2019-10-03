@@ -30,6 +30,6 @@ The build can fail because the static analysis tool, Spotless, detects an issue.
 For more information about spotless checks see
 [here](https://github.com/diffplug/spotless/tree/master/plugin-gradle#custom-rules).
 
-### Local Deployment
-See the README.md under `deployments/keycloak-security` for guidance on starting a local sample deployment for
-protecting ion-ingest, ion-search, and ion-store microservices.
+### More Information & Local Deployment Example
+For more information on the service and how it should operate and be deployed in front of other services, see the
+README.md under `deployments/keycloak-security`.
