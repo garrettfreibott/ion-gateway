@@ -408,7 +408,17 @@
       ]
     }
   },
-  "groups": [],
+  "groups": [
+    {
+      "id": "97146044-488a-41ad-87e6-47e6a8be3c53",
+      "name": "group",
+      "path": "/group",
+      "attributes": {},
+      "realmRoles": [],
+      "clientRoles": {},
+      "subGroups": []
+    }
+  ],
   "defaultRoles": [
     "uma_authorization",
     "offline_access"
@@ -469,7 +479,8 @@
       "optionalClientScopes": [
         "address",
         "phone",
-        "offline_access"
+        "offline_access",
+        "microprofile-jwt"
       ]
     },
     {
@@ -513,7 +524,8 @@
       "optionalClientScopes": [
         "address",
         "phone",
-        "offline_access"
+        "offline_access",
+        "microprofile-jwt"
       ]
     },
     {
@@ -550,23 +562,24 @@
       "optionalClientScopes": [
         "address",
         "phone",
-        "offline_access"
+        "offline_access",
+        "microprofile-jwt"
       ]
     },
     {
       "id": "e41502e8-0438-40f7-89fd-0575ab349c9e",
       "clientId": "login-client",
-      "rootUrl": "http://ion/",
-      "adminUrl": "http://ion/",
+      "rootUrl": "https://ion/",
+      "adminUrl": "https://ion/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "clientAuthenticatorType": "client-secret",
       "secret": "**********",
       "redirectUris": [
-        "http://ion/*"
+        "https://ion/*"
       ],
       "webOrigins": [
-        "http://ion/"
+        "https://ion/"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -626,7 +639,8 @@
       "optionalClientScopes": [
         "address",
         "phone",
-        "offline_access"
+        "offline_access",
+        "microprofile-jwt"
       ]
     },
     {
@@ -719,7 +733,8 @@
       "optionalClientScopes": [
         "address",
         "phone",
-        "offline_access"
+        "offline_access",
+        "microprofile-jwt"
       ]
     }
   ],
@@ -1047,6 +1062,48 @@
       ]
     },
     {
+      "id": "32a109de-4337-4953-b10f-839f7e137853",
+      "name": "microprofile-jwt",
+      "description": "Microprofile - JWT built-in scope",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "id": "75e98d9d-c68b-4fc9-aef5-b1a560067c5a",
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "user.attribute": "foo",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "groups",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "7cb96f80-0fba-4d69-889b-0f5e95a08283",
+          "name": "upn",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "username",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "upn",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    },
+    {
       "id": "341cc83b-cd8f-4dcf-abb9-99efea833361",
       "name": "address",
       "description": "OpenID Connect built-in scope: address",
@@ -1185,6 +1242,7 @@
   ],
   "defaultOptionalClientScopes": [
     "phone",
+    "microprofile-jwt",
     "address",
     "offline_access"
   ],
@@ -1831,6 +1889,6 @@
     "offlineSessionMaxLifespanEnabled": "false",
     "waitIncrementSeconds": "60"
   },
-  "keycloakVersion": "4.8.3.Final",
+  "keycloakVersion": "7.0.0",
   "userManagedAccessAllowed": false
 }

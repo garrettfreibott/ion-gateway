@@ -1,3 +1,5 @@
+insecureSkipVerify = true
+
 defaultEntryPoints = ["http","https"]
     logLevel = "INFO"
     [entryPoints]
@@ -10,8 +12,8 @@ defaultEntryPoints = ["http","https"]
         compress = true
         [entryPoints.https.tls]
           [entryPoints.https.tls.defaultCertificate]
-          certFile = "/cert.pem"
-          keyFile = "/key.pem"
+          certFile = "/certs/ion-example.crt"
+          keyFile = "/certs/ion-example.key"
 
       [entryPoints.dashboard]
         address = ":8081"

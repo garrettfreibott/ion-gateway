@@ -64,7 +64,7 @@ default users. Make sure this isn't being deployed into production.\n\n"
 }
 
 function print_finish () {
-  printf "Run './access-token.sh' to retrieve the a default admin access token for use in postman, curl, etc.\n"
+  printf "Run './access-token.sh' to retrieve a default admin access token for use in postman, curl, etc.\n"
 }
 
 # start of script

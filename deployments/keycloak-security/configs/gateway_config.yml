@@ -1,13 +1,30 @@
+#logging:
+#  level:
+#    ROOT: DEBUG
+
 kc:
-  base-url: http://keycloak:8080/auth
+  base-url: https://keycloak:8443/auth
   realm: master
   realm-url: ${kc.base-url}/realms/${kc.realm}
 
+#server:
+#  ssl:
+#    enabled: true
+##    client-auth: need
+#    key-store: file:/certs/ion-example.p12
+#    key-store-password: example
+#    key-alias: ion
+#    key-store-type: PKCS12
+#    key-password: example
+#    trust-store-type: JKS
+#    trust-store: file:/certs/ion-truststore.jks
+#    trust-store-password: example
+
 spring:
-  spring:
-    thymeleaf:
-      cache: false
-  security:
+  application:
+    name: ion-gateway
+  thymeleaf:
+    cache: false
     oauth2:
       resourceserver:
         jwt:
@@ -28,8 +45,6 @@ spring:
             user-info-uri: ${kc.realm-url}/protocol/openid-connect/userinfo
             user-name-attribute: preferred_username
             jwk-set-uri: ${kc.realm-url}/protocol/openid-connect/certs
-  application:
-    name: ion-gateway
   cloud:
     gateway:
       routes:
@@ -54,5 +69,11 @@ spring:
           uri: http://ingest:8080
           predicates:
             - Path=/ingest/**
+          filters:
+            - TokenRelay=
+        - id: nc
+          uri: http://10.101.6.111:9999/nc
+          predicates:
+            - Path=/nc/**
           filters:
             - TokenRelay=
