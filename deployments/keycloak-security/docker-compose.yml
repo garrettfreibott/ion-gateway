@@ -172,7 +172,7 @@ services:
       DB_DATABASE: keycloak
       DB_PASSWORD: password
       DB_USER: keycloak
-      DB_VENDOR: MYSQL
+      DB_VENDOR: mysql
       KEYCLOAK_PASSWORD: admin
       KEYCLOAK_USER: admin
       X509_CA_BUNDLE: /etc/x509/https/demoCA.crt # CA cert used to create truststore for mutual TLS with the gateway
@@ -180,7 +180,7 @@ services:
       keycloak.migration.provider: singleFile
       keycloak.migration.file: /keycloakJsonConfig.json # Keycloak configuration file with the default users, client, etc.
       keycloak.migration.strategy: OVERWRITE_EXISTING
-    image: jboss/keycloak
+    image: jboss/keycloak:7.0.0
     labels:
       traefik.frontend.passHostHeader: "true"
       traefik.frontend.rule: Host:keycloak
@@ -202,7 +202,7 @@ services:
     environment:
       MYSQL_DATABASE: keycloak
       MYSQL_PASSWORD: password
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root_password
       MYSQL_USER: keycloak
     image: mysql:5
     volumes:
