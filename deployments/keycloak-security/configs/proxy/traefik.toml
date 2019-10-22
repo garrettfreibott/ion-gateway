@@ -1,32 +1,28 @@
-defaultEntryPoints = ["http","https"]
-    logLevel = "INFO"
-    [entryPoints]
-      [entryPoints.http]
+insecureSkipVerify = true
+
+defaultEntryPoints = ["http", "https"]
+
+[entryPoints]
+    [entryPoints.dashboard]
+        address = ":8888"
+    [entryPoints.http]
         address = ":80"
-        compress = true
-
-      [entryPoints.https]
+        [entryPoints.http.redirect]
+            entryPoint = "https"
+    [entryPoints.https]
         address = ":443"
-        compress = true
         [entryPoints.https.tls]
-          [entryPoints.https.tls.defaultCertificate]
-          certFile = "/cert.pem"
-          keyFile = "/key.pem"
+            [entryPoints.https.tls.defaultCertificate]
+                certFile = "/certs/ion.crt"
+                keyFile = "/certs/ion.key"
+[api]
+    entrypoint = "dashboard"
 
-      [entryPoints.dashboard]
-        address = ":8081"
+[docker]
+    swarmMode = true
+    exposedByDefault = false
+    [docker.tls]
+        ca = "/certs/demoCA.crt"
+        cert = "/certs/ion.crt"
+        key = "/certs/ion.key"
 
-    [api]
-      entryPoint = "dashboard"
-
-    [docker]
-      swarmMode = true
-      exposedByDefault = false
-
-    [traefikLog]
-      filePath = "/logs/traefik.log"
-      format   = "json"
-
-    [accessLog]
-      filePath = "/logs/access.log"
-      format = "json"
