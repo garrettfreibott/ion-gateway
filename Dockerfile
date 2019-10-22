@@ -12,4 +12,10 @@ ENV JAVA_TOOL_OPTIONS "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,add
 -Dcom.sun.management.jmxremote.authenticate=false \
 -Djava.rmi.server.hostname=0.0.0.0 \
 -Dcom.sun.management.jmxremote.local.only=false \
--Djavax.net.debug=all"
+-Djavax.net.debug=all \
+-Djavax.net.ssl.trustStore=/certs/demoTruststore.jks \
+-Djavax.net.ssl.trustStorePassword=changeit \
+-Djavax.net.ssl.trustStoreType=jks \
+-Djavax.net.ssl.keyStore=/certs/gateway.jks \
+-Djavax.net.ssl.keyStorePassword=changeit \
+-Djavax.net.ssl.keyStoreType=jks"
