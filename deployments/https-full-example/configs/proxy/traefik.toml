@@ -16,7 +16,7 @@ defaultEntryPoints = ["http", "https"]
                 certFile = "/certs/ion.crt"
                 keyFile = "/certs/ion.key"
 [api]
-    entrypoint = "dashboard"
+    entryPoint = "dashboard"
 
 [docker]
     swarmMode = true

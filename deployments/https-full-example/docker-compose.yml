@@ -176,10 +176,6 @@ services:
       KEYCLOAK_PASSWORD: admin
       KEYCLOAK_USER: admin
       X509_CA_BUNDLE: /etc/x509/https/demoCA.crt # CA cert used to create truststore for mutual TLS with the gateway
-      keycloak.migration.action: import
-      keycloak.migration.provider: singleFile
-      keycloak.migration.file: /keycloakJsonConfig.json # Keycloak configuration file with the default users, client, etc.
-      keycloak.migration.strategy: OVERWRITE_EXISTING
     image: jboss/keycloak:7.0.0
     labels:
       traefik.frontend.passHostHeader: "true"
@@ -192,6 +188,15 @@ services:
         target: 8080
       - published: 8443
         target: 8443
+    # passing these variables in under the "environment" label caused issues on some platforms
+    command: [
+      "-b",
+      "0.0.0.0",
+      "-Dkeycloak.migration.action=import",
+      "-Dkeycloak.migration.provider=singleFile",
+      "-Dkeycloak.migration.file=/keycloakJsonConfig.json",
+      "-Dkeycloak.migration.strategy=OVERWRITE_EXISTING"
+    ]
     configs:
       - source: keycloak_config
         target: /keycloakJsonConfig.json
